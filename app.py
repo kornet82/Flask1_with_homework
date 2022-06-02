@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-PATH_TO_DB = BASE_DIR / "test.db"
+PATH_TO_DB = BASE_DIR / "main.db"
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -25,6 +25,13 @@ class AuthorModel(db.Model):
     def __init__(self, name):
         self.name = name
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+
+        }
+
 
 # Остановился на 28-02-2022 1:10 - подключение миграций, что то идет не так
 
@@ -40,27 +47,71 @@ class QuoteModel(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "author": self.author,
+            "author": self.author.to_dict(),
             "text": self.text
         }
 
 
 # Остановился на 25_02_2022 1:45
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(PATH_TO_DB)
-    return db
+# def get_db():
+#     db = getattr(g, '_database', None)
+#     if db is None:
+#         db = g._database = sqlite3.connect(PATH_TO_DB)
+#     return db
+#
+#
+# # Закончил -25.02.2022 в 47-18
+#
+# @app.teardown_appcontext
+# def close_connection(exception):
+#     db = getattr(g, '_database', None)
+#     if db is not None:
+#         db.close()
 
 
-# Закончил -25.02.2022 в 47-18
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+# AUTORS
+
+@app.route("/authors")
+def get_authors():
+    autors_obj = AuthorModel.query.all()
+    authors_dict = []
+    for author in autors_obj:
+        authors_dict.append(author.to_dict())
+    return jsonify(authors_dict), 200
+
+
+@app.route("/authors", methods=['POST'])
+def create_authors():
+    data = request.json
+    # quote = QuoteModel(data["author"], data["text"])
+    try:
+        author = AuthorModel(**data)
+
+    except TypeError:
+        if data.get("author") == None:
+            return f"Please add Author", 400
+        return f"required data", 400
+    db.session.add(author)
+    db.session.commit()
+    # quote = request.json
+    # # print("data = ", data)
+    # quote["id"] = quotes[-1]["id"] + 1
+    # quotes.append(quote)
+    # connection = sqlite3.connect(PATH_TO_DB)
+    # connection = get_db()
+    # cursor = connection.cursor()
+    # quote = request.json
+    # query = f"INSERT INTO quotes (author, text) VALUES ('{quote['author']}', '{quote['text']}');"
+    # cursor.execute(query)
+    # connection.commit()
+    # quote["id"] = cursor.lastrowid
+    # cursor.close()
+    return jsonify(author.to_dict()), 201
+
+
+# QUOTES
 
 
 @app.route("/quotes")
@@ -124,16 +175,16 @@ def get_quote_by_id(quote_id):
 #     return quotes[random_id]
 
 
-@app.route("/quotes", methods=['POST'])
-def create_quote():
+@app.route("/authors/<int:author_id>/quotes", methods=['POST'])
+def create_quote(author_id):
     data = request.json
-    # quote = QuoteModel(data["author"], data["text"])
+    author = AuthorModel.query.get(author_id)
     try:
-        quote = QuoteModel(**data)
+        quote = QuoteModel(author, **data)
         print(quote)  # эквивалент quote = QuoteModel(author=data["author"], text=data["text"])
-    except TypeError:
-        if data.get("author") == None:
-            return f"Please add Author", 400
+    except AttributeError:
+        if author is None:
+            return f"Author with ID {author_id} not found", 400
         if data.get("text") == None:
             return f"Please add text", 400
         return f"required data", 400
