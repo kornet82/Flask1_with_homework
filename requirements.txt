@@ -8,8 +8,9 @@ Flask==2.1.1
 Flask-Migrate==3.1.0
 Flask-SQLAlchemy==2.5.1
 greenlet==1.1.2
+gunicorn
 importlib-metadata==4.11.3
-ipython==8.2.0
+ipython
 itsdangerous==2.1.2
 jedi==0.18.1
 Jinja2==3.1.1
@@ -20,6 +21,7 @@ parso==0.8.3
 pexpect==4.8.0
 pickleshare==0.7.5
 prompt-toolkit==3.0.29
+psycopg2-binary
 ptyprocess==0.7.0
 pure-eval==0.2.2
 Pygments==2.11.2
