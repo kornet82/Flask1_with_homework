@@ -7,13 +7,18 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).parent
 PATH_TO_DB = BASE_DIR / "main.db"
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("://", "ql://", 1) or f"sqlite:///{BASE_DIR / 'main.db'}"
+
+if os.environ.get('DATABASE_URL') is not None:
+    result = os.environ.get('DATABASE_URL').replace("://", "ql://", 1)
+else:
+    result = None
+    
+app.config['SQLALCHEMY_DATABASE_URI'] = result or f"sqlite:///{BASE_DIR / 'main.db'}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -70,7 +75,6 @@ class QuoteModel(db.Model):
 #     db = getattr(g, '_database', None)
 #     if db is not None:
 #         db.close()
-
 
 
 # AUTORS
