@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from pathlib import Path
 
+
 BASE_DIR = Path(__file__).parent
 PATH_TO_DB = BASE_DIR / "main.db"
 
