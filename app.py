@@ -34,7 +34,7 @@ class AuthorModel(db.Model):
         }
 
 
-# Остановился на 28-02-2022 1:10 - подключение миграций, что то идет не так
+# https://pastebin.com/1nrcqnKY скинуть в телеграмм , закончил на 1-35
 
 class QuoteModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
